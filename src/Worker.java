@@ -27,7 +27,6 @@ public class Worker implements Runnable {
 	private boolean gameStarted = false;
 	private ArrayList<String> previousExchanges = new ArrayList<String>(NBGUESS);
 	private int nbExchanges = 0;
-	private byte[] startBytes = "10".getBytes(); 
 	
 	
 	
