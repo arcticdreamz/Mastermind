@@ -1,9 +1,9 @@
 import java.net.*;
-//import java.util.ArrayList;
+import java.util.ArrayList;
 
 public class MastermindServer {
 	
-	//public static ArrayList<Socket> PlayersArray = new ArrayList<Socket>;
+	//public static ArrayList<Socket> PlayersArray = new ArrayList<Socket>();
 	
 	public static void main ( String argv [ ] ) throws Exception {
 		

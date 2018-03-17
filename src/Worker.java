@@ -4,16 +4,17 @@ import java.util.*;
 
 
 public class Worker implements Runnable {
-	private final int MAXCOLORS = 4; //Must be smaller than 30
-	private int NBGUESS = 1; //Number of guesses allowed
+	//Length of the secret combination
+	private static final int MAXCOLORS = 4; 
+	private int NBGUESS = 12; //Number of guesses allowed
 	//All possible colors in the game
 	private  enum colors {
-		  red,
-		  blue,
-		  yellow,
-		  green,
-		  white,
-		  black;
+		  RED,
+		  BLUE,
+		  YELLOW,
+		  GREEN,
+		  WHITE,
+		  BLACK;
 	}
 	
 	private Socket workersock;
@@ -21,7 +22,6 @@ public class Worker implements Runnable {
 	private InputStream serverIstream;
 	
 	// Number of occurrence of a color in the secret combination
-	// Follows the same order as the colors enum.
 	private int[] colorOccurrence = new int[colors.values().length];
 	private int[] secretCombination = new int[MAXCOLORS];
 	private boolean gameStarted = false;
@@ -55,12 +55,12 @@ public class Worker implements Runnable {
 				System.out.println(clientMessage);
 				
 				//Starting new game ("10")
-				if(clientMessage.equals("10") && gameStarted==false){
+				if(clientMessage.startsWith("10") && gameStarted==false){
 					gameStarted = startGame();
 				}
 				
 				//List previous exchanges ("12")
-				else if(clientMessage.equals("12")){
+				else if(clientMessage.startsWith("12") && length == 2 && nbExchanges >0){
 					StringBuilder builder = new StringBuilder("13");
 					builder.append(nbExchanges);
 					
@@ -73,26 +73,18 @@ public class Worker implements Runnable {
 				}
 				//Guess a combination (ex: "121345")
 				else if(clientMessage.startsWith("12") && length == (2 + MAXCOLORS)){
-					guessCombination(clientMessage);
+					String guessedcombination = clientMessage.substring(2, length);
+					guessCombination(guessedcombination);
 				}
 				//Unknown message
 				else{
 					sendMessage("14");	
 				}
-				
-				/*Sending to the client 
-				serverOstream.write(incomingMessage,0,length);
-				serverOstream.flush();
-				*/
-				
 			}
 			
 			workersock.close();
 			
-		//acknowledge end of connection
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
+		}catch (Exception e) {e.printStackTrace();}
 	}
 	
 	
@@ -122,17 +114,19 @@ public class Worker implements Runnable {
 		int isRightplace = 0;
 		
 		NBGUESS--;
-		
+			
+
 		//Copy the colorOccurence array
 		int[] temp_colorOccurence = Arrays.copyOf(colorOccurrence,colorOccurrence.length);
 		
 		//Check each color at a time
-		for(int i = 0; i < length-2; i++){
+		for(int i = 0; i < length; i++){
 			
-			char guessedcolor = guessedcombination.charAt(i+2);
+			//Extract the color and convert it to int
+			int guessedcolor = Character.getNumericValue(guessedcombination.charAt(i));
 			
 			//If color is at the right place
-			if(guessedcolor == (char) secretCombination[i]){
+			if(guessedcolor == secretCombination[i]){
 				isRightplace++;
 				
 			//If the color is present somewhere in the secret combination
@@ -148,9 +142,12 @@ public class Worker implements Runnable {
 		previousExchanges.add(exchange);
 		nbExchanges++;
 		
+		//TODO:NBGUESS=0;
+
 		//Send the result of the guess to the client
 		String guessResult = String.format("12%d%d",isRightplace,isPresent);
 		sendMessage(guessResult);
+		
 	}
 	
 	
@@ -162,4 +159,6 @@ public class Worker implements Runnable {
 		serverOstream.write(sendingMessage);
 		serverOstream.flush();
 	}
+	
+	public static int getMaxColors() {return MAXCOLORS;}
 }
