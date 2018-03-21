@@ -60,7 +60,7 @@ public class Worker implements Runnable {
 				}
 				
 				//List previous exchanges ("12")
-				else if(clientMessage.startsWith("12") && length == 2 && nbExchanges >0){
+				else if(clientMessage.startsWith("12") && length == 2){
 					StringBuilder builder = new StringBuilder("13");
 					builder.append(nbExchanges);
 					
