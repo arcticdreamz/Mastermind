@@ -7,6 +7,7 @@ public class Worker implements Runnable {
 	//Length of the secret combination
 	private static final int MAXCOLORS = 4; 
 	private int NBGUESS = 12; //Number of guesses allowed
+	
 	//All possible colors in the game
 	private  enum colors {
 		  RED,
@@ -22,6 +23,7 @@ public class Worker implements Runnable {
 	private InputStream serverIstream;
 	
 	// Number of occurrence of a color in the secret combination
+	//Example : "1545" --> [0 1 0 0 1 2]
 	private int[] colorOccurrence = new int[colors.values().length];
 	private int[] secretCombination = new int[MAXCOLORS];
 	private boolean gameStarted = false;
@@ -62,8 +64,10 @@ public class Worker implements Runnable {
 				//List previous exchanges ("12")
 				else if(clientMessage.startsWith("12") && length == 2){
 					StringBuilder builder = new StringBuilder("13");
+					//Add the number of previous exchanges
 					builder.append(nbExchanges);
 					
+					//Iterate through previous guesses and append them to string
 					Iterator<String> iter = previousExchanges.iterator();
 					while (iter.hasNext()){
 						builder.append(iter.next());
@@ -142,11 +146,18 @@ public class Worker implements Runnable {
 		previousExchanges.add(exchange);
 		nbExchanges++;
 		
-		//TODO:NBGUESS=0;
+		//Check if the player has lost the game
+		if(NBGUESS == 0 && isRightplace != MAXCOLORS){
+			
+			String lost = "You have used all your guesses. GAME OVER !";
+			sendMessage(lost);
+		}else{
 
-		//Send the result of the guess to the client
-		String guessResult = String.format("12%d%d",isRightplace,isPresent);
-		sendMessage(guessResult);
+			//Send the result of the guess to the client
+			String guessResult = String.format("12%d%d",isRightplace,isPresent);
+			sendMessage(guessResult);
+		
+		}
 		
 	}
 	
