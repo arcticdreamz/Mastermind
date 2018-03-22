@@ -6,7 +6,7 @@ class MastermindClient {
 	private static ArrayList<Game> currentgames = new ArrayList<Game>();
 
 	
-	public static void main (String argv[]){
+	public static void main (String args[]){
 			
 		try{
 			Socket clientsock = new Socket("localhost",2416);

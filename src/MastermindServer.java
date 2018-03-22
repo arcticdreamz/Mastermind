@@ -1,16 +1,17 @@
+
 import java.net.*;
 
 public class MastermindServer {
 	
-
+	private static ServerSocket serversock;
 	//public static ArrayList<Socket> PlayersArray = new ArrayList<Socket>();
 	
-	public static void main ( String argv [ ] ) throws Exception {
-		
-		ServerSocket serversock = new ServerSocket(2416);
-		System.out.println("Server is running");
-		
+	public static void main (String[] args){
+
 		try{
+			serversock = new ServerSocket(2416);
+			System.out.println("Server is running");
+			
 			while (true){
 				Socket sock = serversock.accept();
 				System.out.println("Connection accepted");
@@ -23,7 +24,12 @@ public class MastermindServer {
 			e.printStackTrace();
 		}
 		finally{
-			serversock.close();
+			try{
+				serversock.close();
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}
 		}
 	}
 }
