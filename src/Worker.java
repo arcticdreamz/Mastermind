@@ -22,11 +22,12 @@ public class Worker implements Runnable {
 
 	// Number of occurrence of a color in the secret combination
 	//Example : "1545" --> [0 1 0 0 1 2]
-	private int[] colorOccurrence = new int[colors.values().length];
-	private int[] secretCombination = new int[4];
+	private int[] colorOccurrence;
+	private int[] secretCombination;
+	private ArrayList<String> previousExchanges;
+
 	private int NBGUESS;
-	private int nbExchanges = 0;
-	private ArrayList<String> previousExchanges = new ArrayList<String>(NBGUESS);
+	private int nbExchanges;
 
 	
 	//Constructor
@@ -42,7 +43,7 @@ public class Worker implements Runnable {
 			while (true) {
 				//Read message from inputStream
 				byte[] incomingMessage = new byte[64];
-				//Timout of 1 minute
+				//Timeout of 1 minute
 				workersock.setSoTimeout(60000);
 				int length = serverIstream.read(incomingMessage);
 				
@@ -57,6 +58,8 @@ public class Worker implements Runnable {
 				
 				//Starting new game ("10")
 				if(clientMessage.startsWith("10")){
+					//Tell the client the game started
+					sendMessage("11");
 					startGame();
 				}
 				
@@ -103,21 +106,28 @@ public class Worker implements Runnable {
 	
 	
 	private void startGame() throws Exception{
-		NBGUESS = 2;
+		NBGUESS = 12;
+		nbExchanges = 0;
+		colorOccurrence = new int[6];
+		secretCombination = new int[4];
+		previousExchanges = new ArrayList<String>(NBGUESS);
 		//Choose a given amount of colors for the secret combination
 		Random rand = new Random();
 		
+		System.out.println("Secret combination: ");
 		for(int i =0; i < 4 ;i++) {
-			int randomColor = rand.nextInt(colors.values().length);
-			secretCombination[i] = randomColor;
-			colorOccurrence[randomColor]++;
+			int randomcolor = rand.nextInt(colors.values().length);
+			secretCombination[i] = randomcolor;
+			colorOccurrence[randomcolor]++;
+			//Output the secret combination to the server console
+			System.out.print(colors.values()[randomcolor]+ " ");
+
+
 		}
 		
-		//Output the secret combination to the server console
-		System.out.println(Arrays.toString(secretCombination));
+		System.out.println("");
 		
-		//Tell the client the game started
-		sendMessage("11");
+
 	
 	}
 	
@@ -159,9 +169,7 @@ public class Worker implements Runnable {
 		//Send the result of the guess to the client
 		String guessResult = String.format("12%d%d",isRightplace,isPresent);
 		sendMessage(guessResult);
-		
-		
-		
+				
 	}
 	
 	
