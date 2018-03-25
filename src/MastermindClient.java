@@ -13,7 +13,9 @@ class MastermindClient {
 			Game newGame = new Game(clientsock);
 			currentgames.add(newGame);
 		}
-		catch(Exception e){e.printStackTrace();}
+		catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 	
 

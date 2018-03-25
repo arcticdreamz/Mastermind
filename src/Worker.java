@@ -5,7 +5,6 @@ import java.util.*;
 
 public class Worker implements Runnable {
 	//Length of the secret combination
-	private int NBGUESS = 12; //Number of guesses allowed
 	
 	//All possible colors in the game
 	private  enum colors {
@@ -20,16 +19,15 @@ public class Worker implements Runnable {
 	private Socket workersock;
 	private OutputStream serverOstream;
 	private InputStream serverIstream;
-	
+
 	// Number of occurrence of a color in the secret combination
 	//Example : "1545" --> [0 1 0 0 1 2]
 	private int[] colorOccurrence = new int[colors.values().length];
 	private int[] secretCombination = new int[4];
-	private boolean gameStarted = false;
-	private ArrayList<String> previousExchanges = new ArrayList<String>(NBGUESS);
+	private int NBGUESS;
 	private int nbExchanges = 0;
-	
-	
+	private ArrayList<String> previousExchanges = new ArrayList<String>(NBGUESS);
+
 	
 	//Constructor
 	Worker(Socket sock){workersock = sock;}
@@ -48,18 +46,18 @@ public class Worker implements Runnable {
 				workersock.setSoTimeout(60000);
 				int length = serverIstream.read(incomingMessage);
 				
-				if(length <=0 ){
-					System.out.println("Connection with client lost");
+				if(length <= 0){
+					System.out.println("Connection with Client " + workersock.getPort() + " lost");
 					break;
 				}
 				
 				//Convert it to string
 				String clientMessage = new String(incomingMessage);
-				System.out.println(clientMessage);
+				System.out.println("Client " + workersock.getPort() + ": " + clientMessage);
 				
 				//Starting new game ("10")
-				if(clientMessage.startsWith("10") && gameStarted==false){
-					gameStarted = startGame();
+				if(clientMessage.startsWith("10")){
+					startGame();
 				}
 				
 				//List previous exchanges ("12")
@@ -88,7 +86,10 @@ public class Worker implements Runnable {
 			}
 			
 			
-		}catch(Exception e) {
+		}catch(SocketException e){
+			System.err.println("The connection timed out");
+		}		
+		catch(Exception e){
 			e.printStackTrace();
 		}
 		finally{
@@ -101,7 +102,8 @@ public class Worker implements Runnable {
 	}
 	
 	
-	private boolean startGame() throws Exception{
+	private void startGame() throws Exception{
+		NBGUESS = 2;
 		//Choose a given amount of colors for the secret combination
 		Random rand = new Random();
 		
@@ -117,7 +119,6 @@ public class Worker implements Runnable {
 		//Tell the client the game started
 		sendMessage("11");
 	
-		return true;	
 	}
 	
 	
@@ -155,18 +156,11 @@ public class Worker implements Runnable {
 		previousExchanges.add(exchange);
 		nbExchanges++;
 		
-		//Check if the player has lost the game
-		if(NBGUESS == 0 && isRightplace != 4){
-			
-			String lost = "You have used all your guesses. GAME OVER !";
-			sendMessage(lost);
-		}else{
-
-			//Send the result of the guess to the client
-			String guessResult = String.format("12%d%d",isRightplace,isPresent);
-			sendMessage(guessResult);
+		//Send the result of the guess to the client
+		String guessResult = String.format("12%d%d",isRightplace,isPresent);
+		sendMessage(guessResult);
 		
-		}
+		
 		
 	}
 	
